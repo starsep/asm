@@ -7,8 +7,12 @@ extern "C" int end(void);
 int main(void) {
 	int sum = 0; // int overflow is ok
 	init();
+	int input = 0;
 	while (!end()) {
-		int input = read_int();
+		input = read_int();
+		if (input == -1) {
+			break;
+		}
 		sum += input;
 	}
 	printf("%d\n", sum);
