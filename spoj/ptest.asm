@@ -7,22 +7,22 @@ KERNEL_CALL equ 0x80
 STDIN equ 0
 STDOUT equ 1
 ASCII_ZERO equ 48
+TEN equ 10
 
 section .data
 	input db 0
 	partial db 0
 	result db 0
-	strlen db 5
 	result_str db `000\n\0` ; `` for escaping characters in C-style
 
 section .text
 
 _start:
-	call one_number
-	call one_number
+	; call one_number
+	; call one_number
 	call print_result
 	call exit
-
+	
 one_number:
     mov byte[partial], 0 ; clear partial result
     
@@ -36,7 +36,16 @@ one_number:
 	ret
 	
 print_result:
-	; TODO: convert result to result_str
+	mov byte[result], 123 ; fake data
+	mov al, 22
+	mov ah, 0
+	mov bl, 10
+	div bl
+	
+	mov cl, byte[result_str]
+	add cl, al
+	mov byte[result_str], cl
+	
 	call write
 
 read:
