@@ -7,6 +7,7 @@ KERNEL_CALL equ 0x80
 STDIN equ 0
 STDOUT equ 1
 ASCII_ZERO equ 48
+ASCII_NINE equ 57
 ASCII_NEWLINE equ 10
 ZERO equ 0
 TEN equ 10
@@ -21,51 +22,68 @@ section .data
 section .text
 
 _start:
-	; call one_number
-	; call one_number
+	call one_number
+	call one_number
+	call one_number
 	call print_result
 	call exit
 
 one_number:
   mov byte[partial], 0 ; clear partial result
 
+read_loop:
 	call read
-  mov ah, byte[partial]
+	cmp ax, 0
+	je read_loop_end
+  mov bl, byte[input]
+	cmp bl, ASCII_ZERO
+	jl read_loop_end
+	cmp bl, ASCII_NINE
+	jg read_loop_end
+  sub bl, ASCII_ZERO
+  mov al, byte[partial]
   imul ax, TEN
-  mov bh, byte[input]
-  sub bh, ASCII_ZERO
-  add ah, bh
+  add al, bl
+	mov byte[partial], al
+	jmp read_loop
 
-	mov byte[result], ah
+read_loop_end:
+
+	xor ax, ax
+	mov al, byte[partial]
+	mov cx, word[result]
+	add cx, ax
+	mov word[result], cx
+
 	ret
 
 print_result:
 	mov ax, word[result]
-	xor edx, edx
-	mov dl, 0
+	xor esi, esi
 
 print_result_loop:
-	cmp al, 0
+	cmp ax, 0
 	jbe print_result_end ; unsigned jle
-	mov ah, ZERO
-	mov bl, TEN
-	div bl
+	mov dx, ZERO
+	mov bx, TEN
+	div bx
 
-	mov cl, byte[result_str + edx]
-	add cl, ah
-	mov byte[result_str + edx], cl
+	mov cl, byte[result_str + esi]
+	add cl, dl
+	mov byte[result_str + esi], cl
 
-	inc dl
+	inc esi
 	jmp print_result_loop
 
 print_result_end:
-	cmp dl, 0
+	cmp esi, 0
 	jne not_zero
-	inc dl
+	inc esi
 not_zero:
-	mov byte[result_str + edx], ASCII_NEWLINE
-	inc dl
-	mov byte[result_len], dl
+	mov byte[result_str + esi], ASCII_NEWLINE
+	inc esi
+	mov ax, si
+	mov byte[result_len], al
 	call reverse
 	call write
 
