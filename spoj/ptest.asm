@@ -29,21 +29,21 @@ _start:
 	call exit
 
 one_number:
-  mov byte[partial], 0 ; clear partial result
+	mov byte[partial], 0 ; clear partial result
 
 read_loop:
 	call read
 	cmp ax, 0
 	je read_loop_end
-  mov bl, byte[input]
+	mov bl, byte[input]
 	cmp bl, ASCII_ZERO
 	jl read_loop_end
 	cmp bl, ASCII_NINE
 	jg read_loop_end
-  sub bl, ASCII_ZERO
-  mov al, byte[partial]
-  imul ax, TEN
-  add al, bl
+	sub bl, ASCII_ZERO
+	mov al, byte[partial]
+	imul ax, TEN
+	add al, bl
 	mov byte[partial], al
 	jmp read_loop
 
@@ -54,7 +54,6 @@ read_loop_end:
 	mov cx, word[result]
 	add cx, ax
 	mov word[result], cx
-
 	ret
 
 print_result:
