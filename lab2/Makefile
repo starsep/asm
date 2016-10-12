@@ -1,4 +1,4 @@
-CPROGRAMS=hello maks sum sum_loop
+CPROGRAMS=hello maks sum sum_loop sum_pointer
 
 all: $(CPROGRAMS)
 
