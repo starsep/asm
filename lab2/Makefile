@@ -1,4 +1,4 @@
-CPROGRAMS=hello maks
+CPROGRAMS=hello maks sum sum_loop
 
 all: $(CPROGRAMS)
 
@@ -9,6 +9,6 @@ $(CPROGRAMS): %: %.cpp %.o
 
 %.o: %.asm
 	nasm -f elf64 -F dwarf -g $<
-	
+
 clean:
 	rm -f *.o $(CPROGRAMS)
