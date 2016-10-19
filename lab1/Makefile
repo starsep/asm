@@ -1,4 +1,4 @@
-CPROGRAMS=
+CPROGRAMS=hello maks sum sum_loop sum_pointer write_c
 
 all: $(CPROGRAMS)
 
