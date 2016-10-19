@@ -1,4 +1,4 @@
-CPROGRAMS=
+CPROGRAMS=capitalize locate remove_spaces sum_of_digits to_hex
 
 all: $(CPROGRAMS)
 
