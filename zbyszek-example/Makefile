@@ -1,4 +1,4 @@
-PROGRAMS=zero jeden dwa trzy
+PROGRAMS=zero jeden dwa trzy cztery
 
 all: $(PROGRAMS)
 
