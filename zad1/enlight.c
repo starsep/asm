@@ -110,7 +110,6 @@ int main(int argc, char **argv) {
   parse_parameters(argc, argv, &change, &delta);
   image *im = input_image();
   enlight(im->red, im->green, im->blue, im->N, im->M, change, delta);
-  print_image(im);
   delete_image(im);
   return 0;
 }
