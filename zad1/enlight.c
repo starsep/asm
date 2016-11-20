@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define BYTES_PER_LINE 8
 #define MIN_DELTA -128
@@ -42,7 +43,8 @@ void print_image(const image *im) {
   const int size = im->N * im->M;
   for (int i = 0; i < size; i++) {
     printf("%d %d %d", im->red[i], im->green[i], im->blue[i]);
-    printf("%c", (i % BYTES_PER_LINE == BYTES_PER_LINE - 1) ? '\n' : ' ');
+    bool newline = (i % BYTES_PER_LINE == BYTES_PER_LINE - 1) || i == size - 1;
+    printf("%c", newline ? '\n' : ' ');
   }
 }
 
@@ -110,6 +112,7 @@ int main(int argc, char **argv) {
   parse_parameters(argc, argv, &change, &delta);
   image *im = input_image();
   enlight(im->red, im->green, im->blue, im->N, im->M, change, delta);
+  print_image(im);
   delete_image(im);
   return 0;
 }
