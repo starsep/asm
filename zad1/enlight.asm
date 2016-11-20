@@ -4,7 +4,7 @@ section .data
   red dq 0
   green dq 0
   blue dq 0
-  channel dq 0
+  data dq 0
   N dd 0
   M dd 0
   change dd 0
@@ -20,24 +20,62 @@ enlight:
   mov dword[change], r9d
   mov al, byte[rsp + 8]
   mov byte[delta], al
-  call set_channel
-  mov rax, qword[channel]
+  call set_data
+  call make_deltas
   ret
 
-set_channel:
+set_data:
   mov eax, dword[change]
   cmp eax, 1
   jne not_1
   mov rax, qword[red]
-  mov qword[channel], rax
+  mov qword[data], rax
   ret
 not_1:
   cmp eax, 2
   jne not_2
   mov rax, qword[green]
-  mov qword[channel], rax
+  mov qword[data], rax
   ret
 not_2:
   mov rax, qword[blue]
-  mov qword[channel], rax
+  mov qword[data], rax
+  ret
+
+
+make_deltas:
+  mov ecx, dword[N]
+  mov eax, dword[M]
+  imul ecx, eax
+loop_start:
+  call make_delta
+  loop loop_start
+  ret
+
+make_delta:
+  mov rax, qword[data]
+  add rax, rcx
+  dec rax ; w rax adres aktualnej komórki
+  mov dl, byte[delta]
+  cmp dl, 0
+  jl substracting
+adding:
+  add dl, byte[rax]
+  jc adding_overflow
+  mov byte[rax], dl
+  ret
+adding_overflow:
+  mov byte[rax], 255
+  ret
+substracting:
+  mov r9b, dl
+  mov dl, 0
+  sub dl, r9b
+  mov r8b, byte[rax]
+  sub r8b, dl
+  jc substracting_overflow
+  mov byte[rax], r8b
+  ret
+substracting_overflow:
+  mov byte[rax], 0
   ret
