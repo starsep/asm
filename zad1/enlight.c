@@ -79,7 +79,7 @@ void usage(const char *error, const char *name) {
   fprintf(stderr,
     "%s! Exiting.\n"
     "Usage: %s change delta\n"
-    "\tchange is 0 (red), 1 (green) or 2 (blue)\n"
+    "\tchange is 1 (red), 2 (green) or 3 (blue)\n"
     "\tdelta is signed char (%d ... %d)\n"
     "Program takes data from standard input, "
     "prints on standard output.\n",
@@ -93,7 +93,7 @@ void parse_parameters(int argc, char **argv, int *change, schar *delta) {
   }
 
   *change = atoi(argv[1]);
-  if (*change < 0 || *change > 2) {
+  if (*change < 1 || *change > 3) {
     usage("Change is incorrect", argv[0]);
   }
 
