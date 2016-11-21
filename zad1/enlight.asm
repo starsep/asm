@@ -12,16 +12,20 @@ section .data
 
 section .text
 enlight:
+  call assign_arguments
+  call set_data
+  call make_deltas
+  ret
+
+assign_arguments:
   mov qword[red], rdi
   mov qword[green], rsi
   mov qword[blue], rdx
   mov dword[N], ecx
   mov dword[M], r8d
   mov dword[change], r9d
-  mov al, byte[rsp + 8]
+  mov al, byte[rsp + 16]
   mov byte[delta], al
-  call set_data
-  call make_deltas
   ret
 
 set_data:
