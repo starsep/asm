@@ -10,14 +10,20 @@ enlight.o: enlight.asm
 	nasm -f elf64 -F dwarf -g enlight.asm
 
 clean:
-	rm -f *.o enlight gen_*
+	rm -rf *.o enlight gen_* fc359081-zad1*
+
+pack: enlight.asm enlight.c Makefile mini.ppm duck.ppm
+	make clean
+	mkdir -p fc359081-zad1
+	cp $^ fc359081-zad1
+	tar -czvf fc359081-zad1.tar.gz fc359081-zad1
 
 tests: gen_mini gen_duck
 
-gen_mini: gen_no_red_mini.ppm gen_red_mini.ppm gen_no_green_mini.ppm \
+gen_mini: mini.ppm gen_no_red_mini.ppm gen_red_mini.ppm gen_no_green_mini.ppm \
 	gen_green_mini.ppm gen_no_blue_mini.ppm gen_blue_mini.ppm
 
-gen_duck: gen_no_red_duck.ppm gen_red_duck.ppm gen_no_green_duck.ppm \
+gen_duck: duck.ppm gen_no_red_duck.ppm gen_red_duck.ppm gen_no_green_duck.ppm \
 	gen_green_duck.ppm gen_no_blue_duck.ppm gen_blue_duck.ppm
 
 gen_no_red_mini.ppm:
