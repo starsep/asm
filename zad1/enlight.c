@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define BYTES_PER_LINE 8
+#define BYTES_PER_LINE 8 // ile bajtów na linię wypisujemy na wyjściu
 #define MIN_DELTA -128
 #define MAX_DELTA 127
 
@@ -15,15 +15,20 @@
 typedef unsigned char uchar;
 typedef signed char schar;
 
+/* funkcja zaimplementowana w NASM
+ * argumenty: 3 wskaźniki na kanały, wymiary obrazka, nr kanału
+ * zmienianego, wartość o jaką zmieniamy */
 extern void enlight(uchar *red, uchar *green, uchar *blue,
   int N, int M, int change, schar delta);
 
+/* pomocnicza struktura do trzymania danych obrazka */
 typedef struct {
   uchar *red, *green, *blue;
   int N, M;
   int maxi;
 } image;
 
+/* nowy obrazek o wymiarach NxM, maksymalna wartość maxi */
 image *new_image(const int N, const int M, const int maxi) {
   image *result = (image *) malloc(sizeof(image));
   result->N = N;
@@ -36,6 +41,7 @@ image *new_image(const int N, const int M, const int maxi) {
   return result;
 }
 
+/* funkcja wypisująca obrazek */
 void print_image(const image *im) {
   printf("P3\n");
   printf("%d %d\n", im->N, im->M);
@@ -48,6 +54,7 @@ void print_image(const image *im) {
   }
 }
 
+/* funkcja zwalniąjaca zasoby obrazka */
 void delete_image(image *im) {
   free(im->red);
   free(im->green);
@@ -55,6 +62,7 @@ void delete_image(image *im) {
   free(im);
 }
 
+/* funkcja wczytująca obrazek z wejścia */
 image *input_image() {
   static const char P3[] = "P3";
   char s[5];
@@ -77,6 +85,7 @@ image *input_image() {
   return result;
 }
 
+/* wypisuje poprawne użycie programu */
 void usage(const char *error, const char *name) {
   fprintf(stderr,
     "%s! Exiting.\n"
@@ -89,6 +98,7 @@ void usage(const char *error, const char *name) {
   exit(1);
 }
 
+/* funkcja parsująca parametry */
 void parse_parameters(int argc, char **argv, int *change, schar *delta) {
   if (argc != 3) {
     usage("Bad number of arguments", argv[0]);
@@ -106,6 +116,7 @@ void parse_parameters(int argc, char **argv, int *change, schar *delta) {
   *delta = (schar) tmp_delta;
 }
 
+/* główna funkcja */
 int main(int argc, char **argv) {
   int change;
   schar delta;
