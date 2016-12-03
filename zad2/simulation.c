@@ -66,7 +66,15 @@ data *input_data(const char *filename) {
   int n, m;
   check_fscanf(2, input, "%d%d", &n, &m);
   data *result = init_data(n, m);
-
+  for (int i = 0; i < n * m; i++) {
+    check_fscanf(1, input, "%f", &result->M[i]);
+  }
+  for (int i = 0; i < m; i++) {
+    check_fscanf(1, input, "%f", &result->G[i]);
+  }
+  for (int i = 0; i < n; i++) {
+    check_fscanf(1, input, "%f", &result->C[i]);
+  }
   return result;
 }
 
