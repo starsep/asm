@@ -12,7 +12,7 @@ simulation.o: simulation.asm
 clean:
 	rm -rf *.o simulation gen_* fc359081-zad2*
 
-pack: simulation.c simulation.asm Makefile
+pack: simulation.c simulation.asm Makefile example.in example2.in
 	make clean
 	mkdir -p fc359081-zad2
 	cp $^ fc359081-zad2
