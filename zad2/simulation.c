@@ -2,8 +2,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern void start(int szer, int wys, float *M, float *G, float *C, float waga);
+#define check_fscanf(len, ...) if (fscanf(__VA_ARGS__) != len) { \
+  fprintf(stderr, "Problem with fscanf occurred. Exiting.\n"); \
+  exit(1);\
+}
+
+extern void start(int n, int m, float *M, float *G, float *C, float ratio);
 extern void step(void);
+
+typedef struct {
+  int n, m;
+  float *M, *G, *C;
+} data;
 
 /* wypisuje poprawne użycie programu */
 void usage(const char *error, const char *name) {
@@ -32,12 +42,63 @@ void parse_parameters(int argc, char **argv, char **filename,
   *steps = atoi(argv[3]);
 }
 
+/* konstuktor dla struktury data */
+data *init_data(const int n, const int m) {
+  data *result = (data *) malloc(sizeof(data));
+  result->n = n;
+  result->m = m;
+  result->M = (float *) malloc(sizeof(float) * n * m);
+  result->G = (float *) malloc(sizeof(float) * m);
+  result->C = (float *) malloc(sizeof(float) * n);
+  return result;
+}
+
+/* destruktor dla struktury data */
+void delete_data(data *d) {
+  free(d->M);
+  free(d->G);
+  free(d->C);
+  free(d);
+}
+
+data *input_data(const char *filename) {
+  FILE *input = fopen(filename, "r");
+  int n, m;
+  check_fscanf(2, input, "%d%d", &n, &m);
+  data *result = init_data(n, m);
+
+  return result;
+}
+
+/* wypisuje dane w tablicy */
+void print_data(const data *d) {
+  for (int i = 0; i < d->n; i++) {
+    for (int j = 0; j < d->m; j++) {
+      printf("%.2f ", d->M[i * d->m + j]);
+    }
+    puts("");
+  }
+  puts("--------");
+}
+
+/* główna funkcja symulacji */
+void simulation(const data *d, const int steps) {
+  for (int i = 0; i < steps; i++) {
+    step();
+    print_data(d);
+  }
+}
+
 /* główna funkcja */
 int main(int argc, char **argv) {
   char *filename = NULL;
   float ratio;
   int steps;
   parse_parameters(argc, argv, &filename, &ratio, &steps);
+  data *d = input_data(filename);
+  start(d->n, d->m, d->M, d->G, d->C, ratio);
+  simulation(d, steps);
+  delete_data(d);
   free(filename);
   return 0;
 }
