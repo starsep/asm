@@ -87,7 +87,12 @@ void print_data(const data *d) {
     }
     puts("");
   }
-  puts("--------");
+}
+
+/* prints message, waits for any character */
+void wait_for_input(void) {
+  puts("***Press return to continue***");
+  getchar();
 }
 
 /* główna funkcja symulacji */
@@ -95,6 +100,9 @@ void simulation(const data *d, const int steps) {
   for (int i = 0; i < steps; i++) {
     step();
     print_data(d);
+    if (i != steps - 1) {
+      wait_for_input();
+    }
   }
 }
 
