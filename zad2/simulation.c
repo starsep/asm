@@ -75,6 +75,7 @@ data *input_data(const char *filename) {
   for (int i = 0; i < n; i++) {
     check_fscanf(1, input, "%f", &result->C[i]);
   }
+  fclose(input);
   return result;
 }
 
