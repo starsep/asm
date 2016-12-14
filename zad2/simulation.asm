@@ -17,6 +17,7 @@ section .data
   size dd 0 ; wielkość macierzy, na których będę robić SSE
   result_matrix dq 0 ; wskaźnik do macierzy, w której będzie wynik
   ratio_matrix dq 0 ; wskaźnik do macierzy, która będzie = ratio * oryginalna
+  ratio4_matrix dq 0 ; wskaźnik do macierzy, która będzie = ratio_matrix * 4
   left_matrix dq 0 ; wskaźnik do macierzy (przesunięta ratio_matrix w lewo)
   right_matrix dq 0 ; wskaźnik do macierzy (przesunięta ratio_matrix w prawo)
   up_matrix dq 0 ; wskaźnik do macierzy (przesunięta ratio_matrix w górę)
@@ -61,6 +62,9 @@ alloc_matrices:
   ; ratio_matrix = malloc(size * sizeof(float));
   call malloc
   mov qword[ratio_matrix], rax
+  ; ratio4_matrix = malloc(size * sizeof(float));
+  call malloc
+  mov qword[ratio4_matrix], rax
   ; left_matrix = malloc(size * sizeof(float));
   call malloc
   mov qword[left_matrix], rax
@@ -81,6 +85,9 @@ clean_matrices:
   call free
   ; free(ratio_matrix)
   mov rdi, qword[ratio_matrix]
+  call free
+  ; free(ratio4_matrix)
+  mov rdi, qword[ratio4_matrix]
   call free
   ; free(left_matrix)
   mov rdi, qword[left_matrix]
