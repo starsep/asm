@@ -112,5 +112,17 @@ clean_matrices:
   call free
   ret
 
+init_result:
+  ret
+
+move_result:
+  ret
+
 step:
+  call init_result
+  call calculate_result
+  call move_result
+  ret
+
+calculate_result:
   ret
