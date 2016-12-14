@@ -3,6 +3,7 @@ extern free
 
 global start
 global step
+global clean
 
 ; stałe
 SIZE_OF_FLOAT equ 4
@@ -28,7 +29,6 @@ start:
   call assign_arguments
   call calculate_size
   call alloc_matrices
-  call clean_matrices
   ret
 
 assign_arguments:
@@ -79,6 +79,7 @@ alloc_matrices:
   mov qword[down_matrix], rax
   ret
 
+clean:
 clean_matrices:
   ; free(result_matrix)
   mov rdi, qword[result_matrix]

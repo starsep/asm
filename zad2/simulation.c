@@ -9,6 +9,7 @@
 
 extern void start(int n, int m, float *M, float *G, float *C, float ratio);
 extern void step(void);
+extern void clean(void);
 
 typedef struct {
   int n, m;
@@ -117,5 +118,6 @@ int main(int argc, char **argv) {
   simulation(d, steps);
   delete_data(d);
   free(filename);
+  clean();
   return 0;
 }
