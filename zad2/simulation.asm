@@ -52,31 +52,39 @@ calculate_size:
   ret
 
 alloc_matrices:
-  ; rdi = size * sizeof(float)
-  xor rdi, rdi
-  mov edi, dword[size]
-  imul edi, SIZE_OF_FLOAT
+  push r12
+  ; r12 = size * sizeof(float)
+  mov r12d, dword[size]
+  imul r12d, SIZE_OF_FLOAT
   ; result_matrix = malloc(size * sizeof(float));
+  mov edi, r12d
   call malloc
   mov qword[result_matrix], rax
   ; ratio_matrix = malloc(size * sizeof(float));
+  mov edi, r12d
   call malloc
   mov qword[ratio_matrix], rax
   ; ratio4_matrix = malloc(size * sizeof(float));
+  mov edi, r12d
   call malloc
   mov qword[ratio4_matrix], rax
   ; left_matrix = malloc(size * sizeof(float));
+  mov edi, r12d
   call malloc
   mov qword[left_matrix], rax
   ; right_matrix = malloc(size * sizeof(float));
+  mov edi, r12d
   call malloc
   mov qword[right_matrix], rax
   ; up_matrix = malloc(size * sizeof(float));
+  mov edi, r12d
   call malloc
   mov qword[up_matrix], rax
   ; down_matrix = malloc(size * sizeof(float));
+  mov edi, r12d
   call malloc
   mov qword[down_matrix], rax
+  pop r12
   ret
 
 clean:
