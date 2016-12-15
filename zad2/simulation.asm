@@ -52,39 +52,40 @@ calculate_size:
   ret
 
 alloc_matrices:
+  ; zachowujemy r12, aby mieć wolny rejestr
   push r12
-  ; r12 = size * sizeof(float)
-  mov r12d, dword[size]
-  imul r12d, SIZE_OF_FLOAT
   ; result_matrix = malloc(size * sizeof(float));
-  mov edi, r12d
-  call malloc
-  mov qword[result_matrix], rax
+  mov r12, result_matrix
+  call alloc_matrix
   ; ratio_matrix = malloc(size * sizeof(float));
-  mov edi, r12d
-  call malloc
-  mov qword[ratio_matrix], rax
+  mov r12, ratio_matrix
+  call alloc_matrix
   ; ratio4_matrix = malloc(size * sizeof(float));
-  mov edi, r12d
-  call malloc
-  mov qword[ratio4_matrix], rax
+  mov r12, ratio4_matrix
+  call alloc_matrix
   ; left_matrix = malloc(size * sizeof(float));
-  mov edi, r12d
-  call malloc
-  mov qword[left_matrix], rax
+  mov r12, left_matrix
+  call alloc_matrix
   ; right_matrix = malloc(size * sizeof(float));
-  mov edi, r12d
-  call malloc
-  mov qword[right_matrix], rax
+  mov r12, right_matrix
+  call alloc_matrix
   ; up_matrix = malloc(size * sizeof(float));
-  mov edi, r12d
-  call malloc
-  mov qword[up_matrix], rax
+  mov r12, up_matrix
+  call alloc_matrix
   ; down_matrix = malloc(size * sizeof(float));
-  mov edi, r12d
-  call malloc
-  mov qword[down_matrix], rax
+  mov r12, down_matrix
+  call alloc_matrix
+  ; ustawiamy r12 na starą wartość
   pop r12
+  ret
+
+; argument: w r12 przekazujemy wskaźnik na wynik
+alloc_matrix:
+  ; edi = size * sizeof(float)
+  mov edi, dword[size]
+  imul edi, SIZE_OF_FLOAT
+  call malloc
+  mov qword[r12], rax
   ret
 
 clean:
