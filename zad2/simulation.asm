@@ -1,9 +1,15 @@
-extern malloc
-extern free
-
 global start
 global step
 global clean
+
+; zależności z libc
+extern malloc
+extern free
+extern memcpy
+
+; zależności do debugu
+extern debug_matrix
+extern debug_init
 
 ; stałe
 SIZE_OF_FLOAT equ 4
@@ -28,6 +34,7 @@ section .text
 start:
   call assign_arguments
   call calculate_size
+  call init_debug
   call alloc_matrices
   ret
 
@@ -49,6 +56,12 @@ calculate_size:
   add r9d, 2
   imul eax, r9d
   mov dword[size], eax
+  ret
+
+init_debug:
+  mov edi, dword[n]
+  mov esi, dword[m]
+  call debug_init
   ret
 
 alloc_matrices:

@@ -3,16 +3,19 @@ CFLAGS=-O2 -std=c11 -Wall -Wextra -Wshadow -pedantic -g
 
 all: simulation
 
-simulation: simulation.c simulation.o
-	$(COMPILER) $(CFLAGS) -o simulation simulation.c simulation.o
+simulation: simulation.c simulation.o debug.o
+	$(COMPILER) $(CFLAGS) -o simulation simulation.c simulation.o debug.o
 
 simulation.o: simulation.asm
 	nasm -f elf64 -F dwarf -g simulation.asm
 
+debug.o: debug.asm
+	nasm -f elf64 -F dwarf -g debug.asm
+
 clean:
 	rm -rf *.o simulation gen_* fc359081-zad2*
 
-pack: simulation.c simulation.asm Makefile example.in example2.in
+pack: simulation.c simulation.asm debug.asm Makefile example.in example2.in
 	make clean
 	mkdir -p fc359081-zad2
 	cp $^ fc359081-zad2
