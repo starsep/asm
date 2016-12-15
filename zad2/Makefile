@@ -6,11 +6,8 @@ all: simulation
 simulation: simulation.c simulation.o debug.o
 	$(COMPILER) $(CFLAGS) -o simulation simulation.c simulation.o debug.o
 
-simulation.o: simulation.asm
-	nasm -f elf64 -F dwarf -g simulation.asm
-
-debug.o: debug.asm
-	nasm -f elf64 -F dwarf -g debug.asm
+%.o: %.asm
+	nasm -f elf64 -F dwarf -g $<
 
 clean:
 	rm -rf *.o simulation gen_* fc359081-zad2*
