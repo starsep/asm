@@ -84,7 +84,9 @@ alloc_matrix:
   ; edi = size * sizeof(float)
   mov edi, dword[size]
   imul edi, SIZE_OF_FLOAT
+  ; rax = malloc(edi)
   call malloc
+  ; *r12 = rax
   mov qword[r12], rax
   ret
 
