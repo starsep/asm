@@ -92,7 +92,9 @@ alloc_matrices:
   pop r12
   ret
 
-; argument: w r12 przekazujemy wskaźnik na wynik
+; alokuje size floatów
+; argumenty:
+;   r12: wskaźnik na wynik
 alloc_matrix:
   ; edi = size * sizeof(float)
   mov edi, dword[size]
