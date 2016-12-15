@@ -138,6 +138,9 @@ move_result:
 
 step:
   call init_result
+  mov rax, qword[result_matrix]
+  mov rdi, qword[result_matrix]
+  call debug_matrix
   call calculate_result
   call move_result
   ret
