@@ -7,9 +7,9 @@ extern malloc
 extern free
 extern memcpy
 
-; zależności do debugu
+; tylko do debugu
+; najlepiej potem usunąć
 extern debug_matrix
-extern debug_init
 
 ; stałe
 SIZE_OF_FLOAT equ 4
@@ -34,7 +34,6 @@ section .text
 start:
   call assign_arguments
   call calculate_size
-  call init_debug
   call alloc_matrices
   ret
 
@@ -58,11 +57,6 @@ calculate_size:
   mov dword[size], eax
   ret
 
-init_debug:
-  mov edi, dword[n]
-  mov esi, dword[m]
-  call debug_init
-  ret
 
 alloc_matrices:
   ; zachowujemy r12, aby mieć wolny rejestr
@@ -131,15 +125,69 @@ clean_matrices:
   ret
 
 init_result:
+  mov rdi, qword[result_matrix]
+  mov rsi, qword[M]
+  mov r10, qword[rsi]
+  mov qword[rdi], r10
+  ret
+  mov ecx, dword[n]
+init_result_loop:
+  ; dest
+  mov rdi, qword[result_matrix]
+  mov r10d, dword[m]
+  add r10d, 2
+  imul r10d, ecx
+  inc r10d
+  imul r10d, 4
+  add rdi, r10
+  ; src
+  mov rsi, qword[M]
+  mov r10d, dword[m]
+  imul r10d, ecx
+  sub r10d, dword[m]
+  imul r10d, 4
+  add rsi, r10
+  ; size
+  mov edx, dword[m]
+  imul edx, 4
+  push rcx
+  call memcpy
+  pop rcx
+  loop init_result_loop
   ret
 
 move_result:
+  ; (rdi, rsi, rdx, rcx, r8, r9) (rax, r10, r11)
+  mov ecx, dword[n]
+move_result_loop:
+  ; dest
+  mov rdi, qword[M]
+  mov r10d, dword[m]
+  imul r10d, ecx
+  sub r10d, dword[m]
+  imul r10d, 4
+  add rdi, r10
+  ; src
+  mov rsi, qword[result_matrix]
+  mov r10d, dword[m]
+  add r10d, 2
+  imul r10d, ecx
+  inc r10d
+  imul r10d, 4
+  add rsi, r10
+  ; size
+  mov edx, dword[m]
+  imul edx, 4
+  push rcx
+  call memcpy
+  pop rcx
+  loop move_result_loop
   ret
 
 step:
-  call init_result
-  mov rax, qword[result_matrix]
-  mov rdi, qword[result_matrix]
+  ; call init_result
+  mov rdi, qword[M] ; qword[result_matrix]
+  mov esi, 4 ; dword[size]
   call debug_matrix
   call calculate_result
   call move_result
