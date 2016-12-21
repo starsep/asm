@@ -299,9 +299,7 @@ step:
   align_call move_result
   ret
 
-; (rdi, rsi, rdx, rcx, r8, r9) (rax, r10, r11)
-calculate_delta:
-  ;
+init_delta:
   mov rdi, qword[delta_matrix]
   mov rsi, qword[result_matrix]
   mov edx, dword[n]
@@ -311,7 +309,11 @@ calculate_delta:
   imul edx, r8d
   imul rdx, SIZE_OF_FLOAT
   align_call memcpy
-  ;
+  ret
+
+; (rdi, rsi, rdx, rcx, r8, r9) (rax, r10, r11)
+calculate_delta:
+  align_call init_delta
   big_matrix_debug delta_matrix
   align_call delta_ratio
   big_matrix_debug delta_matrix
