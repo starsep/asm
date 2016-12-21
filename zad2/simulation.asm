@@ -14,6 +14,8 @@ extern debug_matrix
 ; stałe
 SIZE_OF_FLOAT equ 4
 
+; makra do utrzymywania wyrównania stosu
+;
 %macro align_call 1
   sub rsp, 8
   call %1
@@ -28,6 +30,12 @@ SIZE_OF_FLOAT equ 4
 %macro align_pop 1
   pop %1
   add rsp, 8
+%endmacro
+
+%macro matrix_debug 2
+  mov rdi, qword[%1]
+  mov esi, %2
+  align_call debug_matrix
 %endmacro
 
 section .data
@@ -69,30 +77,21 @@ calculate_size:
   ret
 
 
-alloc_matrices:
-  ; zachowujemy r12, aby mieć wolny rejestr
-  align_push r12
-  ; input_matrix = malloc(size * sizeof(float));
-  mov r12, input_matrix
-  align_call alloc_matrix
-  ; delta_matrix = malloc(size * sizeof(float));
-  mov r12, delta_matrix
-  align_call alloc_matrix
-  ; ustawiamy r12 na starą wartość
-  align_pop r12
-  ret
-
-; alokuje size floatów
-; argumenty:
-;   r12: wskaźnik na wynik
-alloc_matrix:
+%macro alloc_matrix 1
   ; edi = size * sizeof(float)
   mov edi, dword[size]
   imul edi, SIZE_OF_FLOAT
   ; rax = malloc(edi)
   align_call malloc
-  ; *r12 = rax
-  mov qword[r12], rax
+  ; zapisujemy wynik
+  mov qword[%1], rax
+%endmacro
+
+alloc_matrices:
+  ; input_matrix = malloc(size * sizeof(float));
+  alloc_matrix input_matrix
+  ; delta_matrix = malloc(size * sizeof(float));
+  alloc_matrix delta_matrix
   ret
 
 clean:
@@ -168,10 +167,8 @@ move_result:
 ;   ret
 
 step:
-  ; call init_result
-  mov rdi, qword[M] ; qword[result_matrix]
-  mov esi, 4 ; dword[size]
-  align_call debug_matrix
+  align_call init_result
+  matrix_debug M, 4
   align_call calculate_result
   align_call move_result
   ret
