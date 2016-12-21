@@ -1,9 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void debug_matrix(const float *matrix, int size) {
-  for (int i = 0; i < size; i++) {
-    printf("%.2f ", matrix[i]);
+void debug_matrix(const float *matrix, int n, int m) {
+  fprintf(stderr, "-- DEBUGING MATRIX %d x %d --\n", n, m);
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      fprintf(stderr, "%.2f ", matrix[i * n + j]);
+    }
+    fprintf(stderr, "\n");
   }
-  printf("\n");
+  fprintf(stderr, "-- END DEBUGING --\n");
 }
