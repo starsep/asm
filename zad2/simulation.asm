@@ -370,6 +370,8 @@ delta_sum_neighbors_loop:
   add rdi, SIZE_OF_FLOAT
   add rdi, SIZE_OF_FLOAT
   fld dword[rdi]
+  ; przywracamy wskaźnik
+  sub rdi, SIZE_OF_FLOAT
   ; teraz mamy w st0, st1, st2, st3 wszystkich sąsiadów
   ; dodajemy 3 razy
   faddp
