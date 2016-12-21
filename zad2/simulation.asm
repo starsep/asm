@@ -46,7 +46,7 @@ section .data
   C dq 0 ; wskaźnik do chłodnic
   ratio dd 0.0 ; współczynnik (float), waga
   size dd 0 ; wielkość macierzy, na których będę robić SSE
-  input_matrix dq 0 ; wskaźnik do macierzy, w której będzie wynik
+  result_matrix dq 0 ; wskaźnik do macierzy, w której będzie wynik
   delta_matrix dq 0 ; wskaźnik do macierzy, która będzie = ratio * oryginalna
 
 section .text
@@ -88,16 +88,16 @@ calculate_size:
 %endmacro
 
 alloc_matrices:
-  ; input_matrix = malloc(size * sizeof(float));
-  alloc_matrix input_matrix
+  ; result_matrix = malloc(size * sizeof(float));
+  alloc_matrix result_matrix
   ; delta_matrix = malloc(size * sizeof(float));
   alloc_matrix delta_matrix
   ret
 
 clean:
 clean_matrices:
-  ; free(input_matrix)
-  mov rdi, qword[input_matrix]
+  ; free(result_matrix)
+  mov rdi, qword[result_matrix]
   align_call free
   ; free(delta_matrix)
   mov rdi, qword[delta_matrix]
@@ -168,7 +168,8 @@ move_result:
 
 step:
   align_call init_result
-  matrix_debug M, 4
+  mov eax, 4
+  matrix_debug result_matrix, eax
   align_call calculate_result
   align_call move_result
   ret
