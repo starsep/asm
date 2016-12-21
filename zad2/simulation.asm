@@ -4,6 +4,7 @@ global clean
 
 ; zależności z libc
 extern malloc
+extern calloc
 extern free
 extern memcpy
 
@@ -14,6 +15,8 @@ extern debug_matrix
 ; stałe
 SIZE_OF_FLOAT equ 4
 SIZE_OF_QWORD equ 8
+SIZE_OF_DQWORD equ 16
+FLOATS_IN_DQWORD equ 4
 
 ; makra do utrzymywania wyrównania stosu
 ; koszty wydajnościowe, za to wygoda w programowaniu
@@ -90,21 +93,21 @@ calculate_size:
   ret
 
 
-%macro alloc_matrix 1
+alloc_matrices:
   ; edi = size * sizeof(float)
   mov edi, dword[size]
   imul edi, SIZE_OF_FLOAT
   ; rax = malloc(edi)
   align_call malloc
-  ; zapisujemy wynik
-  mov qword[%1], rax
-%endmacro
-
-alloc_matrices:
   ; result_matrix = malloc(size * sizeof(float));
-  alloc_matrix result_matrix
+  mov qword[result_matrix], rax
+  ; edi = size * sizeof(float)
+  mov edi, dword[size]
+  mov esi, SIZE_OF_FLOAT
+  ; rax = malloc(edi)
+  align_call calloc
   ; delta_matrix = malloc(size * sizeof(float));
-  alloc_matrix delta_matrix
+  mov qword[delta_matrix], rax
   ret
 
 clean:
@@ -290,10 +293,83 @@ move_result_loop:
 
 step:
   align_call init_result
-  align_call calculate_result
+  align_call calculate_delta
+  align_call add_delta
   align_call move_result
   ret
 
 ; (rdi, rsi, rdx, rcx, r8, r9) (rax, r10, r11)
-calculate_result:
+calculate_delta:
+  ;
+  mov rdi, qword[delta_matrix]
+  mov rsi, qword[result_matrix]
+  mov edx, dword[n]
+  add edx, 2
+  mov r8d, dword[m]
+  add r8d, 2
+  imul edx, r8d
+  imul rdx, SIZE_OF_FLOAT
+  align_call memcpy
+  ;
+  ret
+
+; dodaje delta_matrix do result_matrix
+; tj. result_matrix += delta_matrix
+add_delta:
+  big_matrix_debug result_matrix
+  big_matrix_debug delta_matrix
+  ; n + 2 wierszy
+  mov ecx, dword[n]
+  add ecx, 2
+add_delta_loop:
+  align_call add_delta_row
+  loop add_delta_loop
+  big_matrix_debug result_matrix
+  ret
+
+; zajmuje się jednym wierszem z add_delta
+; argumenty:
+;   ecx: nr wiersza <1, n + 2>
+; założenia:
+;   nie ruszamy rejestru rcx
+;   w r11d trzymamy counter pętli (nr kolumny)
+;   w rdi trzymamy wskaźnik na result_matrix
+;   w rsi trzymamy wskaźnik na delta_matrix
+add_delta_row:
+  ; w r11 trzymamy counter pętli
+  ; r11d = m + 2 (tyle ile kolumn)
+  mov r11d, dword[m]
+  add r11d, 2
+  mov r10d, ecx
+  ; r10d = i * (m + 2)
+  imul r10d, r11d
+  imul r10d, SIZE_OF_FLOAT
+  mov rdi, qword[result_matrix]
+  add rdi, r10
+  mov rsi, qword[delta_matrix]
+  add rsi, r10
+  ; rdi oraz rsi wskazują na komórkę za końcem i-tego wiersza
+add_delta_row_loop:
+  cmp r11d, FLOATS_IN_DQWORD
+  jge add_delta_row_loop_4plus
+  ; result_matrix--; delta_matrix--;
+  sub rdi, SIZE_OF_FLOAT
+  sub rsi, SIZE_OF_FLOAT
+  fld dword[rdi]
+  fld dword[rsi]
+  faddp
+  fstp dword[rdi]
+  dec r11d
+  jmp add_delta_row_loop_check
+add_delta_row_loop_4plus:
+  sub rdi, SIZE_OF_DQWORD
+  sub rsi, SIZE_OF_DQWORD
+  movdqu xmm0, oword[rdi]
+  movdqu xmm1, oword[rsi]
+  addps xmm0, xmm1
+  movdqu oword[rdi], xmm0
+  sub r11d, FLOATS_IN_DQWORD
+add_delta_row_loop_check:
+  cmp r11d, 0
+  jg add_delta_row_loop
   ret
