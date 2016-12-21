@@ -2,11 +2,8 @@ COMPILER=gcc
 CFLAGS=-O2 -std=c11 -Wall -Wextra -Wshadow -pedantic -g
 all: simulation
 
-simulation: main.c debug.o simulation.o
+simulation: main.c simulation.o
 	$(COMPILER) $(CFLAGS) -o simulation $^
-
-debug.o: debug.c
-	$(COMPILER) $(CFLAGS) -c $^
 
 %.o: %.asm
 	nasm -f elf64 -F dwarf -g $<

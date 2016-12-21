@@ -8,10 +8,6 @@ extern calloc
 extern free
 extern memcpy
 
-; tylko do debugu
-; najlepiej potem usunąć
-extern debug_matrix
-
 ; stałe
 SIZE_OF_FLOAT equ 4
 SIZE_OF_QWORD equ 8
@@ -36,21 +32,6 @@ FLOATS_IN_DQWORD equ 4
 %macro align_pop 1
   pop %1
   add rsp, SIZE_OF_QWORD
-%endmacro
-
-%macro matrix_debug 3
-  mov rdi, qword[%1]
-  mov esi, %2
-  mov edx, %3
-  align_call debug_matrix
-%endmacro
-
-%macro big_matrix_debug 1
-  mov esi, dword[n]
-  add esi, 2
-  mov edx, dword[m]
-  add edx, 2
-  matrix_debug %1, esi, edx
 %endmacro
 
 section .data
@@ -299,10 +280,7 @@ step:
   ret
 
 calculate_delta:
-  big_matrix_debug result_matrix ;
-  big_matrix_debug delta_matrix ;
   align_call delta_sum_neighbors
-  big_matrix_debug delta_matrix ;
   align_call delta_minus4_result
   align_call delta_ratio
   ret
