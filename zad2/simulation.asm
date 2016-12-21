@@ -322,6 +322,7 @@ calculate_delta:
 add_delta:
   big_matrix_debug result_matrix
   big_matrix_debug delta_matrix
+  ; przechodzimy przez całe macierze
   mov ecx, dword[size]
   mov r10d, ecx
   imul r10, SIZE_OF_FLOAT
@@ -329,29 +330,40 @@ add_delta:
   add rdi, r10
   mov rsi, qword[delta_matrix]
   add rsi, r10
-  ; rdi oraz rsi wskazują na komórkę za końcem i-tego wiersza
+  ; rdi oraz rsi wskazują na komórkę za końcem macierzy
 add_delta_loop:
+  ; sprawdzamy czy mamy przynajmniej 4 floaty, wtedy SSE
   cmp ecx, FLOATS_IN_DQWORD
   jge add_delta_loop_4plus
+  ; mniej niż 4 floaty, więc robimy na pojedynczych floatach
   ; result_matrix--; delta_matrix--;
   sub rdi, SIZE_OF_FLOAT
   sub rsi, SIZE_OF_FLOAT
+  ; ładujemy dwie wartości
   fld dword[rdi]
   fld dword[rsi]
+  ; dodajemy
   faddp
+  ; zapisujemy wynik
   fstp dword[rdi]
-  dec ecx
-  jmp add_delta_loop_check
+  loop add_delta_loop
+  jmp add_delta_end
 add_delta_loop_4plus:
+  ; mamy 4 floaty
+  ; przesuwamy wskaźniki
   sub rdi, SIZE_OF_DQWORD
   sub rsi, SIZE_OF_DQWORD
+  ; przesuwamy floaty po 4
   movdqu xmm0, oword[rdi]
   movdqu xmm1, oword[rsi]
+  ; dodajemy wektorowo
   addps xmm0, xmm1
+  ; zapisujemy wynik (4 float naraz)
   movdqu oword[rdi], xmm0
+  ; ecx -= 3
   sub ecx, FLOATS_IN_DQWORD
-add_delta_loop_check:
-  cmp ecx, 0
-  jg add_delta_loop
+  inc ecx
+  loop add_delta_loop
+add_delta_end:
   big_matrix_debug result_matrix
   ret
