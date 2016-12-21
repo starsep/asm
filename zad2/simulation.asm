@@ -44,7 +44,6 @@ section .data
   size dd 0 ; wielkość macierzy, na których będę robić SSE
   result_matrix dq 0 ; wskaźnik do macierzy, w której będzie wynik
   delta_matrix dq 0 ; wskaźnik do macierzy, która będzie = ratio * oryginalna
-  pi dd 3.1415 ; wartość ~PI, sztuczna wartość dla komórek
 
 section .text
 start:
@@ -99,35 +98,6 @@ clean_matrices:
   ; free(delta_matrix)
   mov rdi, qword[delta_matrix]
   align_call free
-  ret
-
-; inicjalizuję wartość dla rogów result_matrix
-; zasadniczo niepotrzebne, ale ładnie wygląda na debugu
-init_result_corners:
-  mov rdi, qword[result_matrix]
-  mov esi, dword[pi]
-  ; lewy górny róg (result_matrix[0])
-  mov dword[rdi], esi
-  mov edx, dword[m]
-  ; edx = m + 1
-  inc edx
-  imul edx, SIZE_OF_FLOAT
-  add rdi, rdx
-  ; prawy górny róg (result_matrix[m + 1])
-  mov dword[rdi], esi
-  mov ecx, dword[n]
-  inc ecx
-  mov r8d, dword[m]
-  add r8d, 2
-  ; ecx = (n + 1) * (m + 2)
-  imul ecx, r8d
-  imul ecx, SIZE_OF_FLOAT
-  add rdi, rcx
-  ; prawy dolny róg (result_matrix[m + 1 + (n + 1) * (m + 2)])
-  mov dword[rdi], esi
-  sub rdi, rdx
-  ; lewy dolny róg (result_matrix[(n + 1) * (m + 2)])
-  mov dword[rdi], esi
   ret
 
 ; kopiujemy grzejniki do result_matrix
@@ -234,7 +204,6 @@ init_result_M_loop:
   ret
 
 init_result:
-  align_call init_result_corners
   align_call init_result_G
   align_call init_result_C
   align_call init_result_M
