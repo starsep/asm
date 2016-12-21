@@ -16,3 +16,6 @@ pack: main.c simulation.asm Makefile example.in example2.in
 	mkdir -p fc359081-zad2
 	cp $^ fc359081-zad2
 	tar -czvf fc359081-zad2.tar.gz fc359081-zad2
+
+example: simulation example.in
+	./simulation example.in 0.1 5
