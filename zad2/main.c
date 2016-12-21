@@ -88,6 +88,7 @@ void print_data(const data *d) {
     }
     puts("");
   }
+  puts("");
 }
 
 /* prints message, waits for any character */
@@ -98,6 +99,8 @@ void wait_for_input(void) {
 
 /* główna funkcja symulacji */
 void simulation(const data *d, const int steps) {
+  puts("Input matrix:");
+  print_data(d);
   for (int i = 0; i < steps; i++) {
     step();
     print_data(d);
