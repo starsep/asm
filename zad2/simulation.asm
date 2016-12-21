@@ -60,8 +60,6 @@ section .data
   G dq 0 ; wskaźnik do grzejników
   C dq 0 ; wskaźnik do chłodnic
   ratio dd 0.0 ; współczynnik (float), waga
-  ratio4 dd 0.0, 0.0, 0.0, 0.0 ; ratio 4 razy
-  minus4 dd -4.0, -4.0, -4.0, -4.0 ; -4 razy 4
   size dd 0 ; wielkość macierzy, na których będę robić SSE
   result_matrix dq 0 ; wskaźnik do macierzy, w której będzie wynik
   delta_matrix dq 0 ; wskaźnik do macierzy, która będzie = ratio * oryginalna
@@ -301,10 +299,95 @@ step:
   ret
 
 calculate_delta:
+  big_matrix_debug result_matrix ;
+  big_matrix_debug delta_matrix ;
+  align_call delta_sum_neighbors
   big_matrix_debug delta_matrix ;
   align_call delta_minus4_result
   align_call delta_ratio
   ret
+
+; dla każdego wewnętrznego źródła ciepła wylicza sumę ciepła jej sąsiadów
+; dane z result_matrix, wynik w delta_matrix
+; tj. dla result: oraz delta:
+;       * a *         * * *
+;       b * c         * x *
+;       * d *         * * *
+;   x = a + b + c + d
+; w ecx trzymamy counter pętli
+; w rdi trzymamy wskaźnik na result_matrix
+; w rsi trzymamy wskaźnik na delta_matrix
+; w r10d trzymamy m + 2
+; w r11 trzymamy (m + 2) * SIZE_OF_FLOAT
+delta_sum_neighbors:
+  ; r10d = m + 2
+  mov r10d, dword[m]
+  add r10d, 2
+  ; r11d = (m + 2) * SIZE_OF_FLOAT
+  mov r11, r10
+  imul r11, SIZE_OF_FLOAT
+  ; sprawdzamy wszystkie komórki poza dolnym i górnym rzędem
+  ; tj. ecx = size - 2 * (m + 2)
+  mov ecx, dword[size]
+  sub ecx, r10d
+  sub ecx, r10d
+  ; ustawiamy wskaźniki na początek drugiego wiersza
+  mov rdi, qword[result_matrix]
+  add rdi, r11
+  mov rsi, qword[delta_matrix]
+  add rsi, r11
+delta_sum_neighbors_loop:
+  ; tutaj chciałem sprawdzać ecx % m + 2
+  ; aby sprawdzić czy jest na brzegu
+  ; ale nie ma potrzeby, dla tych na brzegu wyjdzie coś bez sensu,
+  ; ale na wynik to nie wpływa
+  ; xor edx, edx
+  ; mov eax, ecx
+  ; ; edx = ecx % (m + 2)
+  ; div r10d
+  ; ; sprawdzamy resztę z dzielenia, jeżeli 0 lub (m + 1) to jest zewnętrzne
+  ; cmp edx, 0
+  ; je delta_sum_neighbors_loop_check
+  ; dec r10d
+  ; ; edx == m + 1
+  ; cmp edx, r10d
+  ; inc r10d
+  ; je delta_sum_neighbors_loop_check
+  ; ; czyli środkowy
+  ; przesuwamy wskaźnik w górę
+  sub rdi, r11
+  fld dword[rdi]
+  ; przesuwamy wskaźnik w dół
+  add rdi, r11
+  add rdi, r11
+  fld dword[rdi]
+  ; przywracamy wskaźnik
+  sub rdi, r11
+  ; przesuwamy wskaźnik w lewo
+  sub rdi, SIZE_OF_FLOAT
+  fld dword[rdi]
+  ; przesuwamy wskaźnik w prawo
+  add rdi, SIZE_OF_FLOAT
+  add rdi, SIZE_OF_FLOAT
+  fld dword[rdi]
+  ; teraz mamy w st0, st1, st2, st3 wszystkich sąsiadów
+  ; dodajemy 3 razy
+  faddp
+  faddp
+  faddp
+  ; zapisujemy wynik
+  fstp dword[rsi]
+delta_sum_neighbors_loop_check:
+  ; przesuwamy wskaźniki
+  add rdi, SIZE_OF_FLOAT
+  add rsi, SIZE_OF_FLOAT
+  loop delta_sum_neighbors_loop
+  ret
+
+section .data
+minus4 dd -4.0, -4.0, -4.0, -4.0 ; -4 razy 4
+
+section .text
 
 ; odejmuje od delta_matrix 4 * result_matrix
 ; tj. delta_matrix -= 4.0 * result_matrix
@@ -321,6 +404,7 @@ delta_minus4_result:
   add rdi, r10
   mov rsi, qword[delta_matrix]
   add rsi, r10
+  ; kopiujemy -4 do xmm2
   movdqu xmm2, oword[minus4]
   ; rdi oraz rsi wskazują na komórkę za końcem macierzy
 delta_minus4_result_loop:
@@ -364,6 +448,10 @@ delta_minus4_result_4plus:
   loop delta_minus4_result_loop
   ret
 
+section .data
+ratio4 dd 0.0, 0.0, 0.0, 0.0 ; ratio 4 razy
+
+section .text
 
 ; mnoży delta_matrix przez ratio
 ; w rdi trzymamy wskaźnik na delta_matrix
