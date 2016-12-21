@@ -206,8 +206,6 @@ init_result_C_loop:
   loop init_result_C_loop
   ret
 
-
-; (rdi, rsi, rdx, rcx, r8, r9) (rax, r10, r11)
 init_result_M:
   ; będziemy zmieniać n wierszy
   mov ecx, dword[n]
@@ -258,15 +256,44 @@ init_result:
   align_call init_result_M
   ret
 
+; kod jak w init_result_M (tylko kopiujemy w drugą stronę),
+; więc komentarze pominę.
 move_result:
+  mov ecx, dword[n]
+move_result_loop:
+  mov r8d, dword[n]
+  sub r8d, ecx
+  inc r8d
+  mov rdi, qword[result_matrix]
+  mov r9d, r8d
+  mov r10d, dword[m]
+  add r10d, 2
+  imul r9d, r10d
+  inc r9d
+  imul r9d, SIZE_OF_FLOAT
+  add rdi, r9
+  mov rsi, qword[M]
+  dec r8d
+  mov r9d, dword[m]
+  imul r8d, r9d
+  imul r8d, SIZE_OF_FLOAT
+  add rsi, r8
+  mov edx, dword[m]
+  imul edx, SIZE_OF_FLOAT
+  ; kopiujemy w drugą stronę, więc zamieńmy argumenty
+  xchg rdi, rsi
+  align_push rcx
+  align_call memcpy
+  align_pop rcx
+  loop move_result_loop
   ret
 
 step:
   align_call init_result
-  big_matrix_debug result_matrix
   align_call calculate_result
   align_call move_result
   ret
 
+; (rdi, rsi, rdx, rcx, r8, r9) (rax, r10, r11)
 calculate_result:
   ret
