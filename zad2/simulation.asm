@@ -320,8 +320,6 @@ calculate_delta:
 ;   w rdi trzymamy wskaźnik na result_matrix
 ;   w rsi trzymamy wskaźnik na delta_matrix
 add_delta:
-  big_matrix_debug result_matrix
-  big_matrix_debug delta_matrix
   ; przechodzimy przez całe macierze
   mov ecx, dword[size]
   mov r10d, ecx
@@ -347,7 +345,7 @@ add_delta_loop:
   ; zapisujemy wynik
   fstp dword[rdi]
   loop add_delta_loop
-  jmp add_delta_end
+  ret
 add_delta_loop_4plus:
   ; mamy 4 floaty
   ; przesuwamy wskaźniki
@@ -364,6 +362,4 @@ add_delta_loop_4plus:
   sub ecx, FLOATS_IN_DQWORD
   inc ecx
   loop add_delta_loop
-add_delta_end:
-  big_matrix_debug result_matrix
   ret
