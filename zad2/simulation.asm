@@ -13,23 +13,26 @@ extern debug_matrix
 
 ; stałe
 SIZE_OF_FLOAT equ 4
+SIZE_OF_QWORD equ 8
 
 ; makra do utrzymywania wyrównania stosu
-;
+; koszty wydajnościowe, za to wygoda w programowaniu
+; trochę mało w stylu niskopoziomowym...
+; poza tym zakładam, że pushujemy qwordy zawsze
 %macro align_call 1
-  sub rsp, 8
+  sub rsp, SIZE_OF_QWORD
   call %1
-  add rsp, 8
+  add rsp, SIZE_OF_QWORD
 %endmacro
 
 %macro align_push 1
-  sub rsp, 8
+  sub rsp, SIZE_OF_QWORD
   push %1
 %endmacro
 
 %macro align_pop 1
   pop %1
-  add rsp, 8
+  add rsp, SIZE_OF_QWORD
 %endmacro
 
 %macro matrix_debug 3
