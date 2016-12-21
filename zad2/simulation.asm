@@ -61,6 +61,7 @@ section .data
   C dq 0 ; wskaźnik do chłodnic
   ratio dd 0.0 ; współczynnik (float), waga
   ratio4 dd 0.0, 0.0, 0.0, 0.0 ; ratio 4 razy
+  minus4 dd -4.0, -4.0, -4.0, -4.0 ; -4 razy 4
   size dd 0 ; wielkość macierzy, na których będę robić SSE
   result_matrix dq 0 ; wskaźnik do macierzy, w której będzie wynik
   delta_matrix dq 0 ; wskaźnik do macierzy, która będzie = ratio * oryginalna
@@ -299,25 +300,70 @@ step:
   align_call move_result
   ret
 
-init_delta:
-  mov rdi, qword[delta_matrix]
-  mov rsi, qword[result_matrix]
-  mov edx, dword[n]
-  add edx, 2
-  mov r8d, dword[m]
-  add r8d, 2
-  imul edx, r8d
-  imul rdx, SIZE_OF_FLOAT
-  align_call memcpy
+calculate_delta:
+  big_matrix_debug delta_matrix ;
+  align_call delta_minus4_result
+  align_call delta_ratio
   ret
 
-; (rdi, rsi, rdx, rcx, r8, r9) (rax, r10, r11)
-calculate_delta:
-  align_call init_delta
-  big_matrix_debug delta_matrix
-  align_call delta_ratio
-  big_matrix_debug delta_matrix
+; odejmuje od delta_matrix 4 * result_matrix
+; tj. delta_matrix -= 4.0 * result_matrix
+; w ecx trzymamy counter pętli
+; w rdi trzymamy wskaźnik na result_matrix
+; w rsi trzymamy wskaźnik na delta_matrix
+; w xmm2 trzymamy -4.0, -4.0, -4.0, -4.0
+delta_minus4_result:
+  ; przechodzimy przez całe macierze
+  mov ecx, dword[size]
+  mov r10d, ecx
+  imul r10, SIZE_OF_FLOAT
+  mov rdi, qword[result_matrix]
+  add rdi, r10
+  mov rsi, qword[delta_matrix]
+  add rsi, r10
+  movdqu xmm2, oword[minus4]
+  ; rdi oraz rsi wskazują na komórkę za końcem macierzy
+delta_minus4_result_loop:
+  ; sprawdzamy czy mamy przynajmniej 4 floaty, wtedy SSE
+  cmp ecx, FLOATS_IN_DQWORD
+  jge delta_minus4_result_4plus
+  ; mniej niż 4 floaty, więc robimy na pojedynczych floatach
+  ; result_matrix--; delta_matrix--;
+  sub rdi, SIZE_OF_FLOAT
+  sub rsi, SIZE_OF_FLOAT
+  ; ładujemy -4 oraz result
+  fld dword[rdi]
+  fld dword[minus4]
+  ; mnożymy
+  fmulp
+  ; ładujemy delta
+  fld dword[rsi]
+  ; dodajemy
+  faddp
+  ; zapisujemy wynik
+  fstp dword[rsi]
+  loop delta_minus4_result_loop
   ret
+delta_minus4_result_4plus:
+  ; mamy 4 floaty
+  ; przesuwamy wskaźniki
+  sub rdi, SIZE_OF_DQWORD
+  sub rsi, SIZE_OF_DQWORD
+  ; przesuwamy floaty po 4
+  movdqu xmm0, oword[rdi]
+  movdqu xmm1, oword[rsi]
+  ; result *= -4
+  mulps xmm0, xmm2
+  ; dodajemy
+  addps xmm0, xmm1
+  ; zapisujemy wynik (4 floaty naraz)
+  movdqu oword[rsi], xmm0
+  ; ecx -= 3
+  sub ecx, FLOATS_IN_DQWORD
+  inc ecx
+  loop delta_minus4_result_loop
+  ret
+
 
 ; mnoży delta_matrix przez ratio
 ; w rdi trzymamy wskaźnik na delta_matrix
