@@ -315,43 +315,24 @@ calculate_delta:
 
 ; dodaje delta_matrix do result_matrix
 ; tj. result_matrix += delta_matrix
+; założenia:
+;   w ecx trzymamy counter pętli
+;   w rdi trzymamy wskaźnik na result_matrix
+;   w rsi trzymamy wskaźnik na delta_matrix
 add_delta:
   big_matrix_debug result_matrix
   big_matrix_debug delta_matrix
-  ; n + 2 wierszy
-  mov ecx, dword[n]
-  add ecx, 2
-add_delta_loop:
-  align_call add_delta_row
-  loop add_delta_loop
-  big_matrix_debug result_matrix
-  ret
-
-; zajmuje się jednym wierszem z add_delta
-; argumenty:
-;   ecx: nr wiersza <1, n + 2>
-; założenia:
-;   nie ruszamy rejestru rcx
-;   w r11d trzymamy counter pętli (nr kolumny)
-;   w rdi trzymamy wskaźnik na result_matrix
-;   w rsi trzymamy wskaźnik na delta_matrix
-add_delta_row:
-  ; w r11 trzymamy counter pętli
-  ; r11d = m + 2 (tyle ile kolumn)
-  mov r11d, dword[m]
-  add r11d, 2
+  mov ecx, dword[size]
   mov r10d, ecx
-  ; r10d = i * (m + 2)
-  imul r10d, r11d
-  imul r10d, SIZE_OF_FLOAT
+  imul r10, SIZE_OF_FLOAT
   mov rdi, qword[result_matrix]
   add rdi, r10
   mov rsi, qword[delta_matrix]
   add rsi, r10
   ; rdi oraz rsi wskazują na komórkę za końcem i-tego wiersza
-add_delta_row_loop:
-  cmp r11d, FLOATS_IN_DQWORD
-  jge add_delta_row_loop_4plus
+add_delta_loop:
+  cmp ecx, FLOATS_IN_DQWORD
+  jge add_delta_loop_4plus
   ; result_matrix--; delta_matrix--;
   sub rdi, SIZE_OF_FLOAT
   sub rsi, SIZE_OF_FLOAT
@@ -359,17 +340,18 @@ add_delta_row_loop:
   fld dword[rsi]
   faddp
   fstp dword[rdi]
-  dec r11d
-  jmp add_delta_row_loop_check
-add_delta_row_loop_4plus:
+  dec ecx
+  jmp add_delta_loop_check
+add_delta_loop_4plus:
   sub rdi, SIZE_OF_DQWORD
   sub rsi, SIZE_OF_DQWORD
   movdqu xmm0, oword[rdi]
   movdqu xmm1, oword[rsi]
   addps xmm0, xmm1
   movdqu oword[rdi], xmm0
-  sub r11d, FLOATS_IN_DQWORD
-add_delta_row_loop_check:
-  cmp r11d, 0
-  jg add_delta_row_loop
+  sub ecx, FLOATS_IN_DQWORD
+add_delta_loop_check:
+  cmp ecx, 0
+  jg add_delta_loop
+  big_matrix_debug result_matrix
   ret
