@@ -146,8 +146,6 @@ init_result_corners:
   mov dword[rdi], esi
   ret
 
-; (rdi, rsi, rdx, rcx, r8, r9) (rax, r10, r11)
-
 ; kopiujemy grzejniki do result_matrix
 init_result_G:
   ; w rdi result_matrix++
@@ -208,7 +206,49 @@ init_result_C_loop:
   loop init_result_C_loop
   ret
 
+
+; (rdi, rsi, rdx, rcx, r8, r9) (rax, r10, r11)
 init_result_M:
+  ; będziemy zmieniać n wierszy
+  mov ecx, dword[n]
+init_result_M_loop:
+  ; liczymy, który wiersz kopiujemy = i (1 .. n)
+  mov r8d, dword[n]
+  sub r8d, ecx
+  inc r8d
+  ; rdi = result_matrix
+  mov rdi, qword[result_matrix]
+  ; r9d = i
+  mov r9d, r8d
+  ; r10d = m + 2
+  mov r10d, dword[m]
+  add r10d, 2
+  ; r9d = 1 + (m + 2) * i
+  imul r9d, r10d
+  inc r9d
+  imul r9d, SIZE_OF_FLOAT
+  ; rdi = result_matrix + 1 + (m + 2) * i (dest dla memcpy)
+  add rdi, r9
+  ; rsi = M
+  mov rsi, qword[M]
+  ; i--
+  dec r8d
+  mov r9d, dword[m]
+  ; r8d = (i - 1) * m
+  imul r8d, r9d
+  imul r8d, SIZE_OF_FLOAT
+  ; rsi = M + (i - 1) * m (src dla memcpy)
+  add rsi, r8
+  ; edx = m (size dla memcpy)
+  mov edx, dword[m]
+  imul edx, SIZE_OF_FLOAT
+  ; zachowujemy counter pętli
+  align_push rcx
+  ; memcpy(dest = rdi, src = rsi, m)
+  align_call memcpy
+  ; przywracamy counter pętli
+  align_pop rcx
+  loop init_result_M_loop
   ret
 
 init_result:
