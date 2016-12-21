@@ -217,31 +217,6 @@ init_result:
 
 move_result:
   ret
-;   mov ecx, dword[n]
-; move_result_loop:
-;   ; dest
-;   mov rdi, qword[M]
-;   mov r10d, dword[m]
-;   imul r10d, ecx
-;   sub r10d, dword[m]
-;   imul r10d, 4
-;   add rdi, r10
-;   ; src
-;   mov rsi, qword[result_matrix]
-;   mov r10d, dword[m]
-;   add r10d, 2
-;   imul r10d, ecx
-;   inc r10d
-;   imul r10d, 4
-;   add rsi, r10
-;   ; size
-;   mov edx, dword[m]
-;   imul edx, 4
-;   align_push rcx
-;   align_call memcpy
-;   align_pop rcx
-;   loop move_result_loop
-;   ret
 
 step:
   align_call init_result
