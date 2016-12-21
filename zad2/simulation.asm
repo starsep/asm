@@ -60,6 +60,7 @@ section .data
   G dq 0 ; wskaźnik do grzejników
   C dq 0 ; wskaźnik do chłodnic
   ratio dd 0.0 ; współczynnik (float), waga
+  ratio4 dd 0.0, 0.0, 0.0, 0.0 ; ratio 4 razy
   size dd 0 ; wielkość macierzy, na których będę robić SSE
   result_matrix dq 0 ; wskaźnik do macierzy, w której będzie wynik
   delta_matrix dq 0 ; wskaźnik do macierzy, która będzie = ratio * oryginalna
@@ -311,7 +312,63 @@ calculate_delta:
   imul rdx, SIZE_OF_FLOAT
   align_call memcpy
   ;
+  big_matrix_debug delta_matrix
+  align_call delta_ratio
+  big_matrix_debug delta_matrix
   ret
+
+; mnoży delta_matrix przez ratio
+; w rdi trzymamy wskaźnik na delta_matrix
+; w ecx counter pętli
+; w xmm1 trzymamy (ratio, ratio, ratio, ratio)
+delta_ratio:
+  ; przechodzimy przez całą macierz
+  mov ecx, dword[size]
+  mov r10d, ecx
+  imul r10, SIZE_OF_FLOAT
+  mov rdi, qword[delta_matrix]
+  add rdi, r10
+  ; inicjalizujemy ratio4
+  mov eax, dword[ratio]
+  mov rsi, ratio4
+  mov dword[rsi], eax
+  mov dword[rsi + SIZE_OF_FLOAT], eax
+  mov dword[rsi + 2 * SIZE_OF_FLOAT], eax
+  mov dword[rsi + 3 * SIZE_OF_FLOAT], eax
+  ; kopiujemy do xmm1
+  movdqu xmm1, oword[rsi]
+  ; rdi wskazuje na komórkę za końcem macierzy
+delta_ratio_loop:
+  ; sprawdzamy czy mamy przynajmniej 4 floaty, wtedy SSE
+  cmp ecx, FLOATS_IN_DQWORD
+  jge delta_ratio_4plus
+  ; mniej niż 4 floaty, więc robimy na pojedynczych floatach
+  ; delta_matrix--;
+  sub rdi, SIZE_OF_FLOAT
+  ; ładujemy wartość z delta_matrix i ratio
+  fld dword[rdi]
+  fld dword[ratio]
+  ; mnożymy
+  fmulp
+  ; zapisujemy wynik
+  fstp dword[rdi]
+  loop delta_ratio_loop
+  ret
+delta_ratio_4plus:
+  ; mamy 4 floaty
+  ; przesuwamy wskaźnik
+  sub rdi, SIZE_OF_DQWORD
+  ; przesuwamy floaty po 4
+  movdqu xmm0, oword[rdi]
+  ; mnożymy wektorowo
+  mulps xmm0, xmm1
+  ; zapisujemy wynik (4 floaty naraz)
+  movdqu oword[rdi], xmm0
+  ; ecx -= 3
+  sub ecx, FLOATS_IN_DQWORD
+  inc ecx
+  loop delta_ratio_loop
+ret
 
 ; dodaje delta_matrix do result_matrix
 ; tj. result_matrix += delta_matrix
@@ -356,7 +413,7 @@ add_delta_loop_4plus:
   movdqu xmm1, oword[rsi]
   ; dodajemy wektorowo
   addps xmm0, xmm1
-  ; zapisujemy wynik (4 float naraz)
+  ; zapisujemy wynik (4 floaty naraz)
   movdqu oword[rdi], xmm0
   ; ecx -= 3
   sub ecx, FLOATS_IN_DQWORD
