@@ -1,3 +1,6 @@
-section .data
+.global grayscale
+.func grayscale
 
-section .text
+grayscale:
+    mov r0, #2
+    bx lr
