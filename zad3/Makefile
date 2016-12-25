@@ -1,6 +1,6 @@
 COMPILER=gcc
 CFLAGS=-O2 -std=c99 -Wall -Wextra -Wshadow -pedantic -g
-PROJECT_FILES=main.c grayscale.asm Makefile images
+PROJECT_FILES=main.c grayscale.asm Makefile images c_grayscale.c
 
 all: grayscale
 
