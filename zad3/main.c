@@ -8,12 +8,19 @@
   exit(1);\
 }
 
+#define DEFAULT_RED 77
+#define DEFAULT_BLUE 151
+#define DEFAULT_GREEN 28
+
 typedef unsigned char uchar;
-typedef signed char schar;
 
 /* funkcja zaimplementowana w asemblerze dla ARM
- * TODO: argumenty */
-extern void grayscale();
+ * argumenty: N, M (wymiary obrazka), maksymalna wartość w P3, wartości
+ * wejściowe, miejsce do zapisu, współczynniki składowych
+ */
+extern void grayscale(int size, int maxi, const uchar *in, uchar *out,
+  uchar red, uchar green, uchar blue
+);
 
 /* pomocnicza struktura do trzymania danych obrazka */
 typedef struct {
@@ -42,13 +49,14 @@ void print_image(const char *filename, const image *im) {
       exit(1);
   }
   fprintf(out, "P2\n");
-  fprintf(out, "%d\n", im->maxi);
   fprintf(out, "%d %d\n", im->N, im->M);
+  fprintf(out, "%d\n", im->maxi);
   const int size = im->N * im->M;
   for (int i = 0; i < size; i++) {
     fprintf(out, "%d ", im->data[i]);
   }
   fprintf(out, "\n");
+  fclose(out);
 }
 
 /* funkcja zwalniąjaca zasoby obrazka */
@@ -83,6 +91,7 @@ image *input_image(const char *filename) {
     result->data[3 * i + 1] = G;
     result->data[3 * i + 2] = B;
   }
+  fclose(in);
   return result;
 }
 
@@ -112,7 +121,8 @@ int main(int argc, char **argv) {
   parse_parameters(argc, argv, &in_filename, &out_filename);
   image *in = input_image(in_filename);
   image *out = new_image(in->N, in->M, 255, true);
-  grayscale(in->data, in->N, in->M);
+  grayscale(in->N * in->M, in->maxi, in->data, out->data,
+    DEFAULT_RED, DEFAULT_BLUE, DEFAULT_GREEN);
   print_image(out_filename, out);
   delete_image(in);
   delete_image(out);
