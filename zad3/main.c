@@ -11,6 +11,8 @@
 #define DEFAULT_RED 77
 #define DEFAULT_BLUE 151
 #define DEFAULT_GREEN 28
+#define CHANNELLS_IN_RGB 3
+#define MAX_VALUE_P2 255
 
 typedef unsigned char uchar;
 
@@ -35,8 +37,9 @@ image *new_image(const int N, const int M, const int maxi, bool P2) {
   result->N = N;
   result->M = M;
   result->maxi = maxi;
-  const size_t size = sizeof(uchar) * N * M;
-  result->data = (uchar *) malloc(P2 ? size : 3 * size);
+  const size_t colors_per_pixel = P2 ? 1 : CHANNELLS_IN_RGB;
+  const size_t size = sizeof(uchar) * N * M * colors_per_pixel;
+  result->data = (uchar *) malloc(size);
   return result;
 }
 
@@ -86,10 +89,10 @@ image *input_image(const char *filename) {
   int size = N * M;
   unsigned R, G, B;
   for (int i = 0; i < size; i++) {
-    check_fscanf(3, in, "%u%u%u", &R, &G, &B);
-    result->data[3 * i] = R;
-    result->data[3 * i + 1] = G;
-    result->data[3 * i + 2] = B;
+    check_fscanf(CHANNELLS_IN_RGB, in, "%u%u%u", &R, &G, &B);
+    result->data[CHANNELLS_IN_RGB * i] = R;
+    result->data[CHANNELLS_IN_RGB * i + 1] = G;
+    result->data[CHANNELLS_IN_RGB * i + 2] = B;
   }
   fclose(in);
   return result;
@@ -99,30 +102,49 @@ image *input_image(const char *filename) {
 void usage(const char *error, const char *name) {
   fprintf(stderr,
     "%s! Exiting.\n"
-    "Usage: %s input output\n"
+    "Usage: %s input output [red green blue]\n"
     "\tinput is input filename\n"
-    "\toutput is output filename\n",
-    error, name);
+    "\toutput is output filename\n"
+    "\tred, green, blue are optional ratios, they have to sum to %d.\n",
+    error, name, MAX_VALUE_P2 + 1);
   exit(1);
 }
 
 /* funkcja parsująca parametry */
-void parse_parameters(int argc, char **argv, char **in_filename, char **out_filename) {
-  if (argc != 3) {
+void parse_parameters(int argc, char **argv,
+  char **in_filename, char **out_filename, int *red, int *green, int *blue) {
+  if (argc != 3 && argc != 6) {
     usage("Bad number of arguments", argv[0]);
   }
   *in_filename = argv[1];
   *out_filename = argv[2];
+  if (argc == 3) {
+    *red = DEFAULT_RED;
+    *green = DEFAULT_GREEN;
+    *blue = DEFAULT_BLUE;
+  } else {
+    *red = atoi(argv[3]);
+    *green = atoi(argv[4]);
+    *blue = atoi(argv[5]);
+  }
+  if (*red + *green + *blue != MAX_VALUE_P2 + 1) {
+    fprintf(stderr, "Red, green, blue ratios have to sum to %d. Exiting.\n",
+      MAX_VALUE_P2 + 1
+    );
+    exit(1);
+  }
 }
 
 /* główna funkcja */
 int main(int argc, char **argv) {
   char *in_filename, *out_filename;
-  parse_parameters(argc, argv, &in_filename, &out_filename);
+  int red, green, blue;
+  parse_parameters(argc, argv, &in_filename, &out_filename,
+    &red, &green, &blue);
   image *in = input_image(in_filename);
-  image *out = new_image(in->N, in->M, 255, true);
+  image *out = new_image(in->N, in->M, MAX_VALUE_P2, true);
   grayscale(in->N * in->M, in->maxi, in->data, out->data,
-    DEFAULT_RED, DEFAULT_BLUE, DEFAULT_GREEN);
+    red, green, blue);
   print_image(out_filename, out);
   delete_image(in);
   delete_image(out);
