@@ -21,7 +21,7 @@ typedef unsigned char uchar;
  * wejściowe, miejsce do zapisu, współczynniki składowych
  */
 extern void grayscale(int size, int maxi, const uchar *in, uchar *out,
-  uchar red, uchar green, uchar blue
+  uchar red, uchar green, uchar blue, int maxi_p2
 );
 
 /* pomocnicza struktura do trzymania danych obrazka */
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
   image *in = input_image(in_filename);
   image *out = new_image(in->N, in->M, MAX_VALUE_P2, true);
   grayscale(in->N * in->M, in->maxi, in->data, out->data,
-    red, green, blue);
+    red, green, blue, MAX_VALUE_P2);
   print_image(out_filename, out);
   delete_image(in);
   delete_image(out);
