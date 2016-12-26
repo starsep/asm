@@ -17,7 +17,7 @@ c_grayscale.o: c_grayscale.c
 	$(COMPILER) $(CFLAGS) -c $^
 
 clean:
-	rm -rf *.o grayscale c_grayscale gen_* fc359081-zad3
+	rm -rf *.o grayscale c_grayscale gen_* fc359081-zad3*
 
 pack: $(PROJECT_FILES)
 	make clean
