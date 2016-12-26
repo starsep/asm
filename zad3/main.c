@@ -1,12 +1,13 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
-#define check_fscanf(len, ...) if (fscanf(__VA_ARGS__) != len) { \
-  fprintf(stderr, "Problem with fscanf occurred. Exiting.\n"); \
-  exit(1);\
-}
+#define check_fscanf(len, ...)                                                 \
+  if (fscanf(__VA_ARGS__) != len) {                                            \
+    fprintf(stderr, "Problem with fscanf occurred. Exiting.\n");               \
+    exit(1);                                                                   \
+  }
 
 #define DEFAULT_RED 77
 #define DEFAULT_BLUE 151
@@ -21,8 +22,7 @@ typedef unsigned char uchar;
  * wejściowe, miejsce do zapisu, współczynniki składowych
  */
 extern void grayscale(int size, int maxi, const uchar *in, uchar *out,
-  uchar red, uchar green, uchar blue, int maxi_p2
-);
+                      uchar red, uchar green, uchar blue, int maxi_p2);
 
 /* pomocnicza struktura do trzymania danych obrazka */
 typedef struct {
@@ -31,15 +31,16 @@ typedef struct {
   int maxi;
 } image;
 
-/* nowy obrazek o wymiarach NxM, maksymalna wartość maxi, jeżeli P2 to P2 w p.p. P3 */
+/* nowy obrazek o wymiarach NxM, maksymalna wartość maxi, jeżeli P2 to P2 w p.p.
+ * P3 */
 image *new_image(const int N, const int M, const int maxi, bool P2) {
-  image *result = (image *) malloc(sizeof(image));
+  image *result = (image *)malloc(sizeof(image));
   result->N = N;
   result->M = M;
   result->maxi = maxi;
   const size_t colors_per_pixel = P2 ? 1 : CHANNELLS_IN_RGB;
   const size_t size = sizeof(uchar) * N * M * colors_per_pixel;
-  result->data = (uchar *) malloc(size);
+  result->data = (uchar *)malloc(size);
   return result;
 }
 
@@ -47,9 +48,9 @@ image *new_image(const int N, const int M, const int maxi, bool P2) {
 void print_image(const char *filename, const image *im) {
   FILE *out = fopen(filename, "w");
   if (out == NULL) {
-    fprintf(stderr,
-      "Error with fopen. Can't open file '%s' in write mode.\n", filename);
-      exit(1);
+    fprintf(stderr, "Error with fopen. Can't open file '%s' in write mode.\n",
+            filename);
+    exit(1);
   }
   fprintf(out, "P2\n");
   fprintf(out, "%d %d\n", im->N, im->M);
@@ -72,9 +73,9 @@ void delete_image(image *im) {
 image *input_image(const char *filename) {
   FILE *in = fopen(filename, "r");
   if (in == NULL) {
-    fprintf(stderr,
-      "Error with fopen. Can't open file '%s' in read mode.\n", filename);
-      exit(1);
+    fprintf(stderr, "Error with fopen. Can't open file '%s' in read mode.\n",
+            filename);
+    exit(1);
   }
   static const char P3[] = "P3";
   char s[5];
@@ -101,18 +102,18 @@ image *input_image(const char *filename) {
 /* wypisuje poprawne użycie programu */
 void usage(const char *error, const char *name) {
   fprintf(stderr,
-    "%s! Exiting.\n"
-    "Usage: %s input output [red green blue]\n"
-    "\tinput is input filename\n"
-    "\toutput is output filename\n"
-    "\tred, green, blue are optional ratios, they have to sum to %d.\n",
-    error, name, MAX_VALUE_P2 + 1);
+          "%s! Exiting.\n"
+          "Usage: %s input output [red green blue]\n"
+          "\tinput is input filename\n"
+          "\toutput is output filename\n"
+          "\tred, green, blue are optional ratios, they have to sum to %d.\n",
+          error, name, MAX_VALUE_P2 + 1);
   exit(1);
 }
 
 /* funkcja parsująca parametry */
-void parse_parameters(int argc, char **argv,
-  char **in_filename, char **out_filename, int *red, int *green, int *blue) {
+void parse_parameters(int argc, char **argv, char **in_filename,
+                      char **out_filename, int *red, int *green, int *blue) {
   if (argc != 3 && argc != 6) {
     usage("Bad number of arguments", argv[0]);
   }
@@ -129,8 +130,7 @@ void parse_parameters(int argc, char **argv,
   }
   if (*red + *green + *blue != MAX_VALUE_P2 + 1) {
     fprintf(stderr, "Red, green, blue ratios have to sum to %d. Exiting.\n",
-      MAX_VALUE_P2 + 1
-    );
+            MAX_VALUE_P2 + 1);
     exit(1);
   }
 }
@@ -139,12 +139,12 @@ void parse_parameters(int argc, char **argv,
 int main(int argc, char **argv) {
   char *in_filename, *out_filename;
   int red, green, blue;
-  parse_parameters(argc, argv, &in_filename, &out_filename,
-    &red, &green, &blue);
+  parse_parameters(argc, argv, &in_filename, &out_filename, &red, &green,
+                   &blue);
   image *in = input_image(in_filename);
   image *out = new_image(in->N, in->M, MAX_VALUE_P2, true);
-  grayscale(in->N * in->M, in->maxi, in->data, out->data,
-    red, green, blue, MAX_VALUE_P2);
+  grayscale(in->N * in->M, in->maxi, in->data, out->data, red, green, blue,
+            MAX_VALUE_P2);
   print_image(out_filename, out);
   delete_image(in);
   delete_image(out);
