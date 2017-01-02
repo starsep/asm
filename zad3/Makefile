@@ -23,11 +23,11 @@ pack: $(PROJECT_FILES)
 	make clean
 	mkdir -p fc359081-zad3
 	cp -r $^ fc359081-zad3
-	tar -czvf fc359081-zad3.tar.gz fc359081-zad3
+	tar -czf fc359081-zad3.tar.gz fc359081-zad3
 
 deploy: pack
-	scp -P 5555 fc359081-zad3.tar.gz root@localhost:~
-	ssh -p 5555 root@localhost -t "tar -xvf fc359081-zad3.tar.gz"
+	scp fc359081-zad3.tar.gz arm:~
+	ssh arm -t "tar -xf fc359081-zad3.tar.gz && cd fc359081-zad3 && make examples"
 
 arm_examples: grayscale
 	$(foreach image,$(IMAGES),./$< images/$(image).ppm gen_arm_$(image).pgm;)
