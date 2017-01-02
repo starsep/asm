@@ -36,3 +36,4 @@ c_examples: c_grayscale
 	$(foreach image,$(IMAGES),./$< images/$(image).ppm gen_c_$(image).pgm;)
 
 examples: c_examples arm_examples
+	$(foreach image,$(IMAGES),diff -nsq gen_arm_$(image).pgm gen_c_$(image).pgm;)
