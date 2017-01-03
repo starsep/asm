@@ -18,11 +18,11 @@
 typedef unsigned char uchar;
 
 /* funkcja zaimplementowana w asemblerze dla ARM
- * argumenty: N, M (wymiary obrazka), maksymalna wartość w P3, wartości
+ * argumenty: N, M (wymiary obrazka), wartości
  * wejściowe, miejsce do zapisu, współczynniki składowych
  */
-extern void grayscale(int size, int maxi, const uchar *in, uchar *out,
-                      uchar red, uchar green, uchar blue, int maxi_p2);
+extern void grayscale(int size,const uchar *in, uchar *out,
+                      uchar red, uchar green, uchar blue);
 
 /* pomocnicza struktura do trzymania danych obrazka */
 typedef struct {
@@ -33,11 +33,11 @@ typedef struct {
 
 /* nowy obrazek o wymiarach NxM, maksymalna wartość maxi, jeżeli P2 to P2 w p.p.
  * P3 */
-image *new_image(const int N, const int M, const int maxi, bool P2) {
+image *new_image(const int N, const int M, bool P2) {
   image *result = (image *)malloc(sizeof(image));
   result->N = N;
   result->M = M;
-  result->maxi = maxi;
+  result->maxi = MAX_VALUE_P2;
   const size_t colors_per_pixel = P2 ? 1 : CHANNELLS_IN_RGB;
   const size_t size = sizeof(uchar) * N * M * colors_per_pixel;
   result->data = (uchar *)malloc(size);
@@ -86,7 +86,7 @@ image *input_image(const char *filename) {
   }
   int N, M, maxi;
   check_fscanf(3, in, "%d%d%d", &N, &M, &maxi);
-  image *result = new_image(N, M, maxi, false);
+  image *result = new_image(N, M, false);
   int size = N * M;
   unsigned R, G, B;
   for (int i = 0; i < size; i++) {
@@ -142,9 +142,8 @@ int main(int argc, char **argv) {
   parse_parameters(argc, argv, &in_filename, &out_filename, &red, &green,
                    &blue);
   image *in = input_image(in_filename);
-  image *out = new_image(in->N, in->M, MAX_VALUE_P2, true);
-  grayscale(in->N * in->M, in->maxi, in->data, out->data, red, green, blue,
-            MAX_VALUE_P2);
+  image *out = new_image(in->N, in->M, true);
+  grayscale(in->N * in->M, in->data, out->data, red, green, blue);
   print_image(out_filename, out);
   delete_image(in);
   delete_image(out);
