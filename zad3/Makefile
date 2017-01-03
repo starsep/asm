@@ -1,7 +1,7 @@
 COMPILER=gcc
 CFLAGS=-O2 -std=c99 -Wall -Wextra -Wshadow -pedantic -g
 PROJECT_FILES=main.c grayscale.asm Makefile images c_grayscale.c
-IMAGES=2052 apple duck tea
+IMAGES=2052 apple duck tea mini
 all: grayscale
 
 grayscale: main.c grayscale.o
