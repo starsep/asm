@@ -42,19 +42,19 @@ assign:
     r6, r7, r8 to scratch rejestry do obliczeń */
 grayscale_loop:
   /* do r6 ładujemy wartość czerwonego kolejnego piksela */
-  ldr r6, [r1]
+  ldrb r6, [r1]
   /* mnożymy przez współczynnik czerwonego */
   mul r6, r3, r6
   /* inkrementujemy wskaźnik na wejście */
   add r1, r1, #1
   /* do r7 ładujemy wartość zielonego kolejnego piksela */
-  ldr r7, [r1]
+  ldrb r7, [r1]
   /* mnożymy przez współczynnik zielonego */
   mul r7, r4, r7
   /* inkrementujemy wskaźnik na wejście */
   add r1, r1, #1
   /* do r8 ładujemy wartość niebieskiego kolejnego piksela */
-  ldr r8, [r1]
+  ldrb r8, [r1]
   /* mnożymy przez współczynnik niebieskiego */
   mul r8, r5, r8
   /* inkrementujemy wskaźnik na wejście */
@@ -62,8 +62,9 @@ grayscale_loop:
   /* dodajemy wyniki z niebieskiego i zielonego do czerwonego */
   add r6, r6, r7
   add r6, r6, r8
-  /* tutaj jeszcze możnaby zrobić dzielenie przez (red + green + blue),
-    ale *założenie* ich suma = 256. czyli nawet nie trzeba przesuwać. */
+  asr r6, r6, #8
+  /* tutaj robimy dzielenie przez (red + green + blue),
+    ale *założenie* ich suma = 256. */
   /* zapisujemy wynik (z r6) na wyjście */
   str r6, [r2]
   /* inkrementujemy wskaźnik na wyjście */
