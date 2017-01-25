@@ -10,8 +10,8 @@
   }
 
 #define DEFAULT_RED 77
-#define DEFAULT_BLUE 151
-#define DEFAULT_GREEN 28
+#define DEFAULT_GREEN 151
+#define DEFAULT_BLUE 28
 #define CHANNELLS_IN_RGB 3
 #define MAX_VALUE_P2 255
 
